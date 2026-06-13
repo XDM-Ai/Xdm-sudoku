@@ -14,6 +14,8 @@
     flex-direction: column;
     align-items: center;
     padding: 12px;
+   -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 h1 {
     margin-top: 20px;
@@ -29,41 +31,33 @@ h1 {
 }
 .board {
     display: grid;
-    grid-template-columns: repeat(9, min(11vw, 48px));
-    grid-template-rows: repeat(9, min(11vw, 48px));
-    gap: 2px
-    margin-top: 16px;
-    padding: 10px;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 2px;
 
+    width: 100%;
+    max-width: 420px;
+
+    padding: 10px;
     border-radius: 16px;
 
     background: #151a22;
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.06);
-    box-shadow:
-        0 0 25px rgba(0,255,255,0.12),
-        inset 0 0 10px rgba(255,255,255,0.05);
-   box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 input {
     aspect-ratio: 1 / 1;
+
     width: 100%;
     height: 100%;
 
-    border: none;
-    outline: none;
+    font-size: clamp(20px, 5vw, 24px);
 
     text-align: center;
-    font-size: clamp(18px, 5vw, 22px);
 
     border-radius: 6px;
 
-     background: #10151c;
-     color: #d7e1ff;
-   
-    transition: 0.15s ease;
+    background: #10151c;
+    color: #d7e1ff;
 
-    user-select: none;
+    transition: 0.15s ease;
 }
    
 input:active {
@@ -82,6 +76,11 @@ input:active {
     font-weight: bold;
     text-shadow: 0 0 2px rgba(255,255,255,0.2);
     }
+
+   input.selected {
+    outline: 2px solid #7cf7ff;
+    background: rgba(124,247,255,0.08);
+}
 
   .correct {
     background: #163a2b;
@@ -107,13 +106,19 @@ input:active {
     border-right: 1px solid rgba(124, 247, 255, 0.3);
 }
 
-.board input:nth-child(3n) {
-    border-right: 2px solid rgba(255,255,255,0.08);
+.board input {
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
+/* vertical thick lines */
+.board input:nth-child(3n + 3) {
+    border-right: 2px solid rgba(124,247,255,0.15);
+}
+
+/* horizontal thick lines */
 .board input:nth-child(n + 19):nth-child(-n + 27),
 .board input:nth-child(n + 46):nth-child(-n + 54) {
-    border-bottom: 2px solid rgba(255,255,255,0.08);
+    border-bottom: 2px solid rgba(124,247,255,0.15);
 }
 
    .top-bar {
@@ -176,14 +181,6 @@ button:active {
 <body>
 
 <h1>Xudoku</h1>
-
-<div>
-    <strong>Time:</strong> <span id="timer">0</span> sec
-</div>
-
-<div>
-    <strong>Score:</strong> <span id="score">0</span>
-</div>
 
    <div class="top-bar">
     <div class="stat">⏱ <span id="timer">0</span>s</div>
@@ -326,6 +323,10 @@ function createBoard() {
                     e.target.classList.remove("correct", "wrong");
                     return;
                 }
+               input.addEventListener("focus", () => {
+    document.querySelectorAll("input").forEach(i => i.classList.remove("selected"));
+    input.classList.add("selected");
+});
 
                 const row = e.target.dataset.row;
                 const col = e.target.dataset.col;
