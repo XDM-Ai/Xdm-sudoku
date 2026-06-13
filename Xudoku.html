@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Xudoku Game</title>
+<title>Xudoku</title>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -53,28 +53,57 @@
 </head>
 <body>
 
-<h1>Sudoku Game</h1>
+<h1>Xudoku</h1>
+
+<div>
+    <strong>Time:</strong> <span id="timer">0</span> sec
+</div>
+
+<div>
+    <strong>Score:</strong> <span id="score">0</span>
+</div>
 
 <div class="board" id="board"></div>
 
+    <h2>Select Difficulty</h2>
+
+<button onclick="setDifficulty('easy')">Easy</button>
+<button onclick="setDifficulty('medium')">Medium</button>
+<button onclick="setDifficulty('hard')">Hard</button>
+    
 <button onclick="newGame()">New Game</button>
 <button onclick="resetGame()">Reset</button>
 <script>
+/* =========================
+   🎮 GAME STATE
+========================= */
 let solution = [];
 let puzzle = [];
+let difficulty = "medium";
+
+let time = 0;
+let timerInterval = null;
+
+let score = 0;
 
 const board = document.getElementById("board");
+const SAVE_KEY = "sudoku_save_v1";
 
-/* -----------------------------
-   CREATE EMPTY GRID
------------------------------- */
+/* =========================
+   🧠 GRID ENGINE
+========================= */
+
 function createEmptyGrid() {
     return Array.from({ length: 9 }, () => Array(9).fill(0));
 }
 
-/* -----------------------------
-   CHECK IF MOVE IS VALID
------------------------------- */
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
 function isValid(grid, row, col, num) {
     for (let x = 0; x < 9; x++) {
         if (grid[row][x] === num) return false;
@@ -93,29 +122,23 @@ function isValid(grid, row, col, num) {
     return true;
 }
 
-/* -----------------------------
-   BACKTRACKING SOLVER
-   (fills full valid board)
------------------------------- */
 function solve(grid) {
-    for (let row = 0; row < 9; row++) {
-        for (let col = 0; col < 9; col++) {
+    for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
 
-            if (grid[row][col] === 0) {
+            if (grid[r][c] === 0) {
+                let nums = [1,2,3,4,5,6,7,8,9];
+                shuffle(nums);
 
-                let numbers = [1,2,3,4,5,6,7,8,9];
-                shuffle(numbers);
-
-                for (let num of numbers) {
-                    if (isValid(grid, row, col, num)) {
-                        grid[row][col] = num;
+                for (let n of nums) {
+                    if (isValid(grid, r, c, n)) {
+                        grid[r][c] = n;
 
                         if (solve(grid)) return true;
 
-                        grid[row][col] = 0;
+                        grid[r][c] = 0;
                     }
                 }
-
                 return false;
             }
         }
@@ -123,34 +146,18 @@ function solve(grid) {
     return true;
 }
 
-/* -----------------------------
-   SHUFFLE ARRAY
------------------------------- */
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
-
-/* -----------------------------
-   GENERATE FULL SOLUTION
------------------------------- */
-function generateFullSolution() {
+function generateSolution() {
     let grid = createEmptyGrid();
     solve(grid);
     return grid;
 }
 
-/* -----------------------------
-   REMOVE NUMBERS (PUZZLE)
------------------------------- */
-function generatePuzzle(grid, difficulty = 45) {
+function generatePuzzle(grid, removeCount) {
     let puzzleGrid = grid.map(row => [...row]);
 
     let removed = 0;
 
-    while (removed < difficulty) {
+    while (removed < removeCount) {
         let r = Math.floor(Math.random() * 9);
         let c = Math.floor(Math.random() * 9);
 
@@ -163,9 +170,10 @@ function generatePuzzle(grid, difficulty = 45) {
     return puzzleGrid;
 }
 
-/* -----------------------------
-   BUILD BOARD UI
------------------------------- */
+/* =========================
+   🧩 GAME BOARD UI
+========================= */
+
 function createBoard() {
     board.innerHTML = "";
 
@@ -179,12 +187,12 @@ function createBoard() {
                 input.disabled = true;
             }
 
-            input.maxLength = 1;
             input.dataset.row = r;
             input.dataset.col = c;
+            input.maxLength = 1;
 
             input.addEventListener("input", (e) => {
-                const val = e.target.value;
+                let val = e.target.value;
 
                 if (!/^[1-9]$/.test(val)) {
                     e.target.value = "";
@@ -202,6 +210,14 @@ function createBoard() {
                     e.target.classList.add("wrong");
                     e.target.classList.remove("correct");
                 }
+
+                saveGame();
+
+                if (checkWin()) {
+                    stopTimer();
+                    calculateScore();
+                    setTimeout(() => alert("🎉 You solved the puzzle!"), 200);
+                }
             });
 
             board.appendChild(input);
@@ -209,23 +225,172 @@ function createBoard() {
     }
 }
 
-/* -----------------------------
-   NEW GAME (FULL ENGINE)
------------------------------- */
+/* =========================
+   🎮 GAME CONTROL
+========================= */
+
 function newGame() {
-    solution = generateFullSolution();   // STEP 1: generate real Sudoku solution
-    puzzle = generatePuzzle(solution, 45); // STEP 2: remove numbers
-    createBoard();                       // STEP 3: render UI
+    clearInterval(timerInterval);
+
+    solution = generateSolution();
+
+    let removeCount =
+        difficulty === "easy" ? 35 :
+        difficulty === "medium" ? 45 : 55;
+
+    puzzle = generatePuzzle(solution, removeCount);
+
+    time = 0;
+    score = 0;
+
+    document.getElementById("timer").textContent = 0;
+    document.getElementById("score").textContent = 0;
+
+    createBoard();
+    startTimer();
 }
 
-/* RESET */
 function resetGame() {
+    clearInterval(timerInterval);
+    time = 0;
+    score = 0;
+
+    document.getElementById("timer").textContent = 0;
+    document.getElementById("score").textContent = 0;
+
     createBoard();
 }
 
-/* START */
-newGame();
-</script>
+/* =========================
+   ⏱ TIMER SYSTEM
+========================= */
 
+function startTimer() {
+    clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+        time++;
+        document.getElementById("timer").textContent = time;
+        saveGame();
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+}
+
+/* =========================
+   🏆 SCORE SYSTEM
+========================= */
+
+function calculateScore() {
+    let base =
+        difficulty === "easy" ? 1000 :
+        difficulty === "medium" ? 2000 : 3000;
+
+    score = Math.max(base - time * 5, 100);
+
+    document.getElementById("score").textContent = score;
+}
+
+/* =========================
+   🧠 WIN CHECK
+========================= */
+
+function checkWin() {
+    const inputs = document.querySelectorAll("input");
+
+    for (let input of inputs) {
+        const r = input.dataset.row;
+        const c = input.dataset.col;
+
+        if (parseInt(input.value) !== solution[r][c]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/* =========================
+   💾 SAVE / LOAD SYSTEM
+========================= */
+
+function saveGame() {
+    const inputs = document.querySelectorAll("input");
+
+    let state = [];
+
+    inputs.forEach(input => {
+        state.push({
+            row: input.dataset.row,
+            col: input.dataset.col,
+            value: input.value,
+            disabled: input.disabled
+        });
+    });
+
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+        puzzle,
+        solution,
+        difficulty,
+        time,
+        score,
+        state
+    }));
+}
+
+function loadGame() {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (!saved) return false;
+
+    const data = JSON.parse(saved);
+
+    puzzle = data.puzzle;
+    solution = data.solution;
+    difficulty = data.difficulty;
+    time = data.time;
+    score = data.score;
+
+    createBoard();
+
+    const inputs = document.querySelectorAll("input");
+
+    inputs.forEach(input => {
+        const match = data.state.find(
+            s => s.row == input.dataset.row && s.col == input.dataset.col
+        );
+
+        if (match) {
+            input.value = match.value;
+            input.disabled = match.disabled;
+        }
+    });
+
+    document.getElementById("timer").textContent = time;
+    document.getElementById("score").textContent = score;
+
+    startTimer();
+    return true;
+}
+
+/* =========================
+   🎚 DIFFICULTY
+========================= */
+
+function setDifficulty(level) {
+    difficulty = level;
+    newGame();
+}
+
+/* =========================
+   🚀 START GAME
+========================= */
+
+window.onload = function () {
+    const loaded = loadGame();
+    if (!loaded) newGame();
+};
+</script>
 </body>
 </html>
