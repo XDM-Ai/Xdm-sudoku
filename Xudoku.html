@@ -30,7 +30,7 @@ h1 {
 .board {
     display: grid;
     grid-template-columns: repeat(9, min(11vw, 48px));
-    /* grid-template-rows: repeat(9, min(11vw, 48px)); */
+    grid-template-rows: repeat(9, min(11vw, 48px));
     gap: 2px
     margin-top: 16px;
     padding: 10px;
@@ -40,9 +40,9 @@ h1 {
     background: #151a22;
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255,255,255,0.06);
-    /* box-shadow:
+    box-shadow:
         0 0 25px rgba(0,255,255,0.12),
-        inset 0 0 10px rgba(255,255,255,0.05); */
+        inset 0 0 10px rgba(255,255,255,0.05);
    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 input {
@@ -63,7 +63,7 @@ input {
    
     transition: 0.15s ease;
 
-    /* user-select: none; */
+    user-select: none;
 }
    
 input:active {
@@ -144,7 +144,7 @@ input:active {
     max-width: 420px;
 
     margin-top: 18px;
-    /* margin-bottom: 30px; */
+    margin-bottom: 30px;
 
     display: grid;
     grid-template-columns: repeat(2, 1fr);
