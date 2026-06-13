@@ -13,6 +13,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 12px;
 }
 h1 {
     margin-top: 20px;
@@ -21,24 +22,31 @@ h1 {
     color: #7cf7ff;
     text-shadow: 0 0 15px #2fffea;
 }
+
+   h1, .top-bar, .board, .controls {
+    width: 100%;
+    max-width: 420px;
+}
 .board {
     display: grid;
     grid-template-columns: repeat(9, min(11vw, 48px));
-    grid-template-rows: repeat(9, min(11vw, 48px));
+    /* grid-template-rows: repeat(9, min(11vw, 48px)); */
+    gap: 2px
+    margin-top: 16px;
+    padding: 10px;
 
-    margin-top: 20px;
-    padding: 12px;
-
-    border-radius: 14px;
+    border-radius: 16px;
 
     background: #151a22;
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255,255,255,0.06);
-    box-shadow:
+    /* box-shadow:
         0 0 25px rgba(0,255,255,0.12),
-        inset 0 0 10px rgba(255,255,255,0.05);
+        inset 0 0 10px rgba(255,255,255,0.05); */
+   box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 input {
+    aspect-ratio: 1 / 1;
     width: 100%;
     height: 100%;
 
@@ -46,7 +54,7 @@ input {
     outline: none;
 
     text-align: center;
-    font-size: clamp(18px, 4vw, 22px);
+    font-size: clamp(18px, 5vw, 22px);
 
     border-radius: 6px;
 
@@ -55,7 +63,7 @@ input {
    
     transition: 0.15s ease;
 
-    user-select: none;
+    /* user-select: none; */
 }
    
 input:active {
@@ -99,9 +107,13 @@ input:active {
     border-right: 1px solid rgba(124, 247, 255, 0.3);
 }
 
+.board input:nth-child(3n) {
+    border-right: 2px solid rgba(255,255,255,0.08);
+}
+
 .board input:nth-child(n + 19):nth-child(-n + 27),
 .board input:nth-child(n + 46):nth-child(-n + 54) {
-    border-bottom: 2px solid rgba(124, 247, 255, 0.25);
+    border-bottom: 2px solid rgba(255,255,255,0.08);
 }
 
    .top-bar {
@@ -128,11 +140,11 @@ input:active {
 }
 
    .controls {
-    width: 90%;
+    width: 100%;
     max-width: 420px;
 
-    margin-top: 20px;
-    margin-bottom: 30px;
+    margin-top: 18px;
+    /* margin-bottom: 30px; */
 
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -140,18 +152,19 @@ input:active {
 }
 
 button {
-    padding: 12px;
+    padding: 14px;
     border: none;
     border-radius: 10px;
 
-    background: rgba(255,255,255,0.06);
-    color:  #dcdcdc;
+    background:#1a2230;
+    color: #d7e1ff;
 
     font-weight: bold;
 
     backdrop-filter: blur(10px);
 
     transition: 0.2s ease;
+    font-size: 14px;
 }
 
 button:active {
